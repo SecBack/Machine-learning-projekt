@@ -5,7 +5,11 @@ from math import exp
 def sigmoid(self):
     for i in range(0, self.rows):
         for j in range(0, self.cols):
-            self.values[i][j] = 1 / (1 + exp(-(self.values[i][j])))
+            print("-exp: ", self.values[i][j])
+            if self.values[i][j] < 0:
+                self.values[i][j] = 1 - 1 / (1 + exp(self.values[i][j]))
+            else:
+                self.values[i][j] = 1 / (1 + exp(-(self.values[i][j])))
 
 
 def divsigmoid(self):
@@ -14,36 +18,75 @@ def divsigmoid(self):
 
 
 class NeuralNetwork:
-    def __init__(self, input_nodes, hidden_nodes, output_nodes):
+    def __init__(self, input_nodes, hidden_layers, hidden_nodes, output_nodes):
         self.input_nodes = input_nodes
+        self.hidden_layers = hidden_layers
         self.hidden_nodes = hidden_nodes
         self.output_nodes = output_nodes
         self.learning_rate = 0.5
 
         # create weight matricies
+        # input to hidden
         self.weights_ih = Matrix(self.hidden_nodes, self.input_nodes)
+
+        # creates array of matricies corresponding to each hidden layer
+        self.hidLayerWeiArr = []
+        for i in range(self.hidden_layers):
+            hidLayerWei = Matrix(self.hidden_nodes, self.hidden_nodes)
+            self.hidLayerWeiArr.append(hidLayerWei)
+            self.hidLayerWeiArr[i].randomize()
+
         self.weights_ho = Matrix(self.output_nodes, self.hidden_nodes)
         self.weights_ih.randomize()
         self.weights_ho.randomize()
 
         # create bias Matricies
-        self.bias_h = Matrix(self.hidden_nodes, 1)
+        # create biases for the hidden layer
+        self.bias_h_arr = []
+        for i in range(self.hidden_nodes):
+            hidLayerbi = Matrix(self.hidden_nodes, 1)
+            self.bias_h_arr.append(hidLayerbi)
+            self.bias_h_arr[i].randomize()
+
+        # self.bias_intohid = Matrix(self.input_nodes, 1) each neuron in the input layer is only connected to each hidden neuron the the next layer (16 not 784)
+        self.bias_intohid = Matrix(self.hidden_nodes, 1)
         self.bias_o = Matrix(self.output_nodes, 1)
-        self.bias_h.randomize()
+        self.bias_intohid.randomize()
         self.bias_o.randomize()
 
     def feedforward(self, input):
         self.input = input
-
         input = Matrix.statranse(input)
 
         # feedforward from input to hidden layer
-        hidden = Matrix.multiply(self.weights_ih, input)
-        hidden.add(self.bias_h)
-        hidden.map(hidden, sigmoid)
+        # print("input rows: ", input.rows)
+        # print("input cols: ", input.cols)
+        intohid = Matrix.multiply(self.weights_ih, input)
+        # print("first ma rows: ", intohid.rows)
+        # print("first ma cols: ", intohid.cols)
+        # print("bias ma rows: ", self.bias_intohid.rows)
+        # print("bias ma cols: ", self.bias_intohid.cols)
+        # print("intohid before: ", intohid.values)
+        intohid.add(self.bias_intohid)
+        # print("intohid after: ", intohid.values)
+
+        intohid.map(intohid, sigmoid)
+        print("sig result: ", intohid.values)
+
+        # feedforward through the array of hidden layers
+        self.hiddenArr = []
+        self.hiddenArr.append(intohid)
+
+        for i in range(0, len(self.hidLayerWeiArr)):
+            print("this is iteration: ", i, "\n")
+            hidden = Matrix.multiply(self.hidLayerWeiArr[i], self.hiddenArr[i])
+            self.hiddenArr[i].add(self.bias_h_arr[i])
+            self.hiddenArr[i].map(self.hiddenArr[i], sigmoid)
+            print("sig result: ", self.hiddenArr[i].values)
+            self.hiddenArr.append(hidden)
 
         # feedforward from hidden to output layer
-        output = Matrix.multiply(self.weights_ho, hidden)
+        output = Matrix.multiply(self.weights_ho, self.hiddenArr[-1])
         output.add(self.bias_o)
         output.map(output, sigmoid)
 
