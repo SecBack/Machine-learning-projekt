@@ -5,11 +5,7 @@ from math import exp
 def sigmoid(self):
     for i in range(0, self.rows):
         for j in range(0, self.cols):
-            print("-exp: ", self.values[i][j])
-            if self.values[i][j] < 0:
-                self.values[i][j] = 1 - 1 / (1 + exp(self.values[i][j]))
-            else:
-                self.values[i][j] = 1 / (1 + exp(-(self.values[i][j])))
+            self.values[i][j] = 1 / (1 + exp(-(self.values[i][j])))
 
 
 def divsigmoid(self):
@@ -23,7 +19,7 @@ class NeuralNetwork:
         self.hidden_layers = hidden_layers
         self.hidden_nodes = hidden_nodes
         self.output_nodes = output_nodes
-        self.learning_rate = 0.5
+        self.learning_rate = 0.1
 
         # create weight matricies
         # input to hidden
@@ -59,31 +55,19 @@ class NeuralNetwork:
         input = Matrix.statranse(input)
 
         # feedforward from input to hidden layer
-        # print("input rows: ", input.rows)
-        # print("input cols: ", input.cols)
         intohid = Matrix.multiply(self.weights_ih, input)
-        # print("first ma rows: ", intohid.rows)
-        # print("first ma cols: ", intohid.cols)
-        # print("bias ma rows: ", self.bias_intohid.rows)
-        # print("bias ma cols: ", self.bias_intohid.cols)
-        # print("intohid before: ", intohid.values)
         intohid.add(self.bias_intohid)
-        # print("intohid after: ", intohid.values)
-
         intohid.map(intohid, sigmoid)
-        print("sig result: ", intohid.values)
 
         # feedforward through the array of hidden layers
         self.hiddenArr = []
         self.hiddenArr.append(intohid)
 
         for i in range(0, len(self.hidLayerWeiArr)):
-            print("this is iteration: ", i, "\n")
             hidden = Matrix.multiply(self.hidLayerWeiArr[i], self.hiddenArr[i])
-            self.hiddenArr[i].add(self.bias_h_arr[i])
-            self.hiddenArr[i].map(self.hiddenArr[i], sigmoid)
-            print("sig result: ", self.hiddenArr[i].values)
             self.hiddenArr.append(hidden)
+            self.hiddenArr[i + 1].add(self.bias_h_arr[i])
+            self.hiddenArr[i + 1].map(self.hiddenArr[i + 1], sigmoid)
 
         # feedforward from hidden to output layer
         output = Matrix.multiply(self.weights_ho, self.hiddenArr[-1])

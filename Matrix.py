@@ -34,16 +34,10 @@ class Matrix:
 
     def add(self, n):
         if isinstance(n, Matrix):
-            # print("add m1 rows: ", self.rows)
-            # print("add m1 cols: ", self.cols)
-            # print("add m1 vals: ", self.values)
-            # print("add m2 rows: ", n.rows)
-            # print("add m2 cols: ", n.cols)
-            # print("add m2 vals: ", n.values)
             for i in range(0, self.rows):
                 for j in range(0, self.cols):
                     self.values[i][j] += n.values[i][j]
-            print("add result: ", self.values)
+            # print("add result: ", self.values)
         else:
             for i in range(0, self.rows):
                 for j in range(0, self.cols):
@@ -75,12 +69,12 @@ class Matrix:
             )
         elif m1.cols == m2.rows:
             result = Matrix(m1.rows, m2.cols)
-            # print("mul m1 rows: ", m1.rows)
-            # print("mul m1 cols: ", m1.cols)
-            # print("mul m1 vals: ", m1.values)
-            # print("mul m2 rows: ", m2.rows)
-            # print("mul m2 cols: ", m2.cols)
-            # print("mul m2 vals: ", m2.values)
+            print("mul m1 rows: ", m1.rows)
+            print("mul m1 cols: ", m1.cols)
+            print("mul m1 vals: ", m1.values)
+            print("mul m2 rows: ", m2.rows)
+            print("mul m2 cols: ", m2.cols)
+            print("mul m2 vals: ", m2.values)
 
             for i in range(0, result.rows):
                 for j in range(0, result.cols):
@@ -88,7 +82,7 @@ class Matrix:
                     for k in range(0, m1.cols):
                         sum += m1.values[i][k] * m2.values[k][j]
                     result.values[i][j] = sum
-            print("mul result: ", result.values)
+            print("mul result: ", result.values, "\n")
             return result
 
     @staticmethod
