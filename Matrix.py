@@ -20,7 +20,7 @@ class Matrix:
                 for j in range(0, len(array[0])):
                     result.values[i][j] = array[i][j]
             return result
-        elif isinstance(array[0], int):
+        elif isinstance(array[0], float):
             result = Matrix(1, len(array))
             for i in range(0, len(array)):
                 for j in range(0, len(array)):
@@ -69,12 +69,12 @@ class Matrix:
             )
         elif m1.cols == m2.rows:
             result = Matrix(m1.rows, m2.cols)
-            print("mul m1 rows: ", m1.rows)
-            print("mul m1 cols: ", m1.cols)
-            print("mul m1 vals: ", m1.values)
-            print("mul m2 rows: ", m2.rows)
-            print("mul m2 cols: ", m2.cols)
-            print("mul m2 vals: ", m2.values)
+            # print("mul m1 rows: ", m1.rows)
+            # print("mul m1 cols: ", m1.cols)
+            # print("mul m1 vals: ", m1.values)
+            # print("mul m2 rows: ", m2.rows)
+            # print("mul m2 cols: ", m2.cols)
+            # print("mul m2 vals: ", m2.values)
 
             for i in range(0, result.rows):
                 for j in range(0, result.cols):
@@ -82,7 +82,7 @@ class Matrix:
                     for k in range(0, m1.cols):
                         sum += m1.values[i][k] * m2.values[k][j]
                     result.values[i][j] = sum
-            print("mul result: ", result.values, "\n")
+            #print("mul result: ", result.values, "\n")
             return result
 
     @staticmethod
@@ -115,12 +115,20 @@ class Matrix:
 
     @staticmethod
     def statranse(m):
-        result = Matrix(m.cols, m.rows)
+        if isinstance(m.values[0], list):
+            result = Matrix(m.cols, m.rows)
+            for i in range(0, m.rows):
+                for j in range(0, m.cols):
+                    result.values[j][i] = m.values[i][j]
+            return result
 
-        for i in range(0, m.rows):
-            for j in range(0, m.cols):
-                result.values[j][i] = m.values[i][j]
-        return result
+        elif isinstance(m.values[0], int):
+            result = Matrix(m.cols, m.rows)
+
+            for i in range(0, m.rows):
+                # for j in range(0, m.cols):
+                result.values[i][0] = m[i]
+            return result
 
     def map(self, m, func, *args):
         func(m, *args)

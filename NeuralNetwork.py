@@ -76,8 +76,17 @@ class NeuralNetwork:
 
         return output
 
+    def errors(self, inputy, targets):
+        self.inputy = inputy
+        print("input: ", self.inputy)
+        self.targets = targets
+        print("targets: ", self.targets)
+
+        return errors
+
     def train(self, input, targets):
 
+        feedforward
         # feedforward pasted
         # feedforward from input to hidden layer
         input = Matrix.statranse(input)
