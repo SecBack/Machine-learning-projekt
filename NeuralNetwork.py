@@ -76,11 +76,9 @@ class NeuralNetwork:
 
         return output
 
-    def errors(self, inputy, targets):
-        self.inputy = inputy
-        print("input: ", self.inputy)
-        self.targets = targets
-        print("targets: ", self.targets)
+    @staticmethod
+    def errors(targets, ffOutput):
+        errors = Matrix.subtract(targets, ffOutput)
 
         return errors
 

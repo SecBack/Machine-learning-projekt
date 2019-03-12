@@ -20,7 +20,8 @@ class Matrix:
                 for j in range(0, len(array[0])):
                     result.values[i][j] = array[i][j]
             return result
-        elif isinstance(array[0], float):
+
+        elif isinstance(array[0], float) or isinstance(array[0], int):
             result = Matrix(1, len(array))
             for i in range(0, len(array)):
                 for j in range(0, len(array)):
