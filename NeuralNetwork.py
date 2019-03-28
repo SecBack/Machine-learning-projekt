@@ -9,7 +9,8 @@ def sigmoid(self):
 
 
 def divsigmoid(self):
-    # takes in a matirx that has been passed through the sigmoid function, then changes that to the derivative function of sigmoid
+    # takes in a matirx that has been passed through the sigmoid function, then changes
+    # that to the derivative of sigmoid
     return self * (1 - self)
 
 
@@ -21,33 +22,30 @@ class NeuralNetwork:
         self.output_nodes = output_nodes
         self.learning_rate = 0.1
 
-        # create weight matricies
         # input to hidden
-        self.weights_ih = Matrix(self.hidden_nodes, self.input_nodes)
+        self.weightsIh = Matrix(self.hidden_nodes, self.input_nodes)
+        self.weightsIh.randomize()
 
         # creates array of matricies corresponding to each hidden layer
+        # -1 because i always takes n-1 things to connect n things in a line
         self.hidLayerWeiArr = []
-        for i in range(self.hidden_layers):
-            hidLayerWei = Matrix(self.hidden_nodes, self.hidden_nodes)
-            self.hidLayerWeiArr.append(hidLayerWei)
+        for i in range(0, (self.hidden_layers) - 1):
+            self.hidLayerWei = Matrix(self.hidden_nodes, self.hidden_nodes)
+            self.hidLayerWeiArr.append(self.hidLayerWei)
             self.hidLayerWeiArr[i].randomize()
 
-        self.weights_ho = Matrix(self.output_nodes, self.hidden_nodes)
-        self.weights_ih.randomize()
-        self.weights_ho.randomize()
+        # create weights from the last hidden layer, to the output layer
+        self.weightsHo = Matrix(self.output_nodes, self.hidden_nodes)
+        self.weightsHo.randomize()
 
-        # create bias Matricies
         # create biases for the hidden layer
         self.bias_h_arr = []
-        for i in range(self.hidden_nodes):
-            hidLayerbi = Matrix(self.hidden_nodes, 1)
-            self.bias_h_arr.append(hidLayerbi)
+        for i in range(self.hidden_layers):
+            hidLayerBi = Matrix(self.hidden_nodes, 1)
+            self.bias_h_arr.append(hidLayerBi)
             self.bias_h_arr[i].randomize()
 
-        # self.bias_intohid = Matrix(self.input_nodes, 1) each neuron in the input layer is only connected to each hidden neuron the the next layer (16 not 784)
-        self.bias_intohid = Matrix(self.hidden_nodes, 1)
         self.bias_o = Matrix(self.output_nodes, 1)
-        self.bias_intohid.randomize()
         self.bias_o.randomize()
 
     def feedforward(self, input):
@@ -55,82 +53,93 @@ class NeuralNetwork:
         input = Matrix.statranse(input)
 
         # feedforward from input to hidden layer
-        intohid = Matrix.multiply(self.weights_ih, input)
-        intohid.add(self.bias_intohid)
-        intohid.map(intohid, sigmoid)
+        self.intohid = Matrix.multiply(self.weightsIh, input)
+        self.intohid.add(self.bias_h_arr[0])
+        self.intohid.map(self.intohid, sigmoid)
 
         # feedforward through the array of hidden layers
         self.hiddenArr = []
-        self.hiddenArr.append(intohid)
+        self.hiddenArr.append(self.intohid)
 
         for i in range(0, len(self.hidLayerWeiArr)):
             hidden = Matrix.multiply(self.hidLayerWeiArr[i], self.hiddenArr[i])
             self.hiddenArr.append(hidden)
-            self.hiddenArr[i + 1].add(self.bias_h_arr[i])
+            self.hiddenArr[i + 1].add(self.bias_h_arr[i + 1])
             self.hiddenArr[i + 1].map(self.hiddenArr[i + 1], sigmoid)
 
         # feedforward from hidden to output layer
-        output = Matrix.multiply(self.weights_ho, self.hiddenArr[-1])
+        output = Matrix.multiply(self.weightsHo, self.hiddenArr[-1])
         output.add(self.bias_o)
         output.map(output, sigmoid)
 
         return output
 
     @staticmethod
-    def errors(targets, ffOutput):
-        errors = Matrix.subtract(targets, ffOutput)
+    def backprop(self, targets, ffOutput):
+        # calculate output errors
+        outputErrors = Matrix.subtract(targets, ffOutput)
 
-        return errors
+        # calculate gradient for the output layer
+        outGrad = Matrix.stamap(ffOutput, divsigmoid)
+        outGrad = Matrix.elemulti(outGrad, outputErrors)  # 10x1 * 10x1
+        outGrad.scale(self.learning_rate)
 
-    def train(self, input, targets):
+        # calculate deltas for the weights that go from last hidden layer to the output layer
+        hiddenT = Matrix.statranse(self.hiddenArr[-1])
+        weightHoDeltas = Matrix.multiply(outGrad, hiddenT)
 
-        feedforward
-        # feedforward pasted
-        # feedforward from input to hidden layer
-        input = Matrix.statranse(input)
+        # adjust the weights by its deltas
+        self.weightsHo.add(weightHoDeltas)
 
-        hidden = Matrix.multiply(self.weights_ih, input)
-        hidden.add(self.bias_h)
-        hidden.map(hidden, sigmoid)
-
-        # feedforward from hidden to output layer
-        outputs = Matrix.multiply(self.weights_ho, hidden)
-        outputs.add(self.bias_o)
-        outputs.map(outputs, sigmoid)
-
-        # finds errors in output
-        output_errors = Matrix.subtract(targets, outputs)
-
-        # calculate gradient
-        gradients = Matrix.stamap(outputs, divsigmoid)
-        gradients = Matrix.multiply(gradients, output_errors)
-        gradients.scale(self.learning_rate)
-
-        # calcualte deltaes
-        hidden_T = hidden.statranse(hidden)
-        # weight_ho_deltas = Matrix.multiply(gradients, hidden_T)
-        weight_ho_deltas = Matrix.multiply(gradients, hidden_T)
-
-        # adjust the weights by deltas
-        self.weights_ho.add(weight_ho_deltas)
         # adjust biases by its deltas (which is just the gradients)
-        self.bias_o.add(gradients)
+        self.bias_o.add(outGrad)
 
-        # find errors in hidden
-        who_t = self.weights_ho.statranse(self.weights_ho)
-        hidden_errors = Matrix.multiply(who_t, output_errors)
+        # calculate gradient for hidden layer
+        # notice index -i fetches the elements in the array from behind
+        hidLayErrArr = []
+        hidLayErrArr.append(outputErrors)
+        self.hidLayerWeiArr.append(self.weightsHo)
+        for i in range(1, self.hidden_layers):
+            # find errors in the hidden layers, layer by layer
+            weiHidLay = self.hidLayerWeiArr[-i]
+            weiHidLayT = Matrix.statranse(weiHidLay)
+            hidLayErr = Matrix.multiply(weiHidLayT, hidLayErrArr[i - 1])  # i-1
+            hidLayErrArr.append(hidLayErr)
 
-        # calculate hidden gradients
-        hidden_gradients = Matrix.stamap(hidden, divsigmoid)
-        hidden_gradients = Matrix.elemulti(hidden_gradients, hidden_errors)
-        hidden_gradients.scale(self.learning_rate)
+            # calculate the gradients for the hidden layers
+            hidGrad = Matrix.stamap(self.hiddenArr[-i], divsigmoid)
+            hidGrad = Matrix.elemulti(hidGrad, hidLayErrArr[-i])
+            hidGrad.scale(self.learning_rate)
 
-        # calculate input to hidden deltas
-        inputs_T = input.statranse(input)
-        weight_ih_deltas = Matrix.multiply(hidden_gradients, inputs_T)
-        self.weights_ih.add(weight_ih_deltas)
+            # calcualte the deltas for the hidden layers
+            hidddenT = Matrix.statranse(self.hiddenArr[(-i) - 1])
+            weiHidLayDel = Matrix.multiply(hidGrad, hidddenT)
 
-        # adjust the weights by deltas
-        self.weights_ih.add(weight_ih_deltas)
+            # adjust the weights in the hidden layer with its delta
+            self.hidLayerWeiArr[(-i) - 1].add(weiHidLayDel)
+
+            # adjust the bias for each hidden neuron, with its deltas, with is the same as the gradient for the neuron
+            self.bias_h_arr[-i].add(hidGrad)
+
+        # find errors in the fist layer in the hidden layers
+        weiHidLay = self.hidLayerWeiArr[0]
+        weiHidLayT = Matrix.statranse(weiHidLay)
+        intoHidErr = Matrix.multiply(weiHidLayT, hidLayErrArr[-1])  # i-1
+        # find out which layer the loop above ends at first layer in the hidden layer, or the one after that
+
+        # calculate gradient for the first layer in the hidden layer
+        intoHidGrad = Matrix.stamap(self.hiddenArr[0], divsigmoid)
+        intoHidGrad = Matrix.elemulti(intoHidGrad, intoHidErr)
+        intoHidGrad.scale(self.learning_rate)
+
+        # calculate deltas for the weights in the first hidden layer
+        inputT = self.input  # is alerady transposed
+        weightIhDeltas = Matrix.multiply(intoHidGrad, inputT)
+
+        # adjust the weights by its deltas
+        self.weightsIh.add(weightIhDeltas)
+
         # adjust biases by its deltas (which is just the gradients)
-        self.bias_h.add(hidden_gradients)
+        self.bias_h_arr[0].add(intoHidGrad)
+
+        del self.hidLayerWeiArr[-1]

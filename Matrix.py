@@ -12,6 +12,7 @@ class Matrix:
             for j in range(0, self.cols):
                 self.values[i].append(0)
 
+
     @staticmethod
     def tomatrix(array):
         if isinstance(array[0], list):
@@ -28,21 +29,23 @@ class Matrix:
                     result.values[0][i] = array[i]
             return result
 
+
     def randomize(self):
         for i in range(0, self.rows):
             for j in range(0, self.cols):
-                self.values[i][j] = random.randint(-1, 1)
+                self.values[i][j] = random.randint(-2, 2)
+
 
     def add(self, n):
         if isinstance(n, Matrix):
             for i in range(0, self.rows):
                 for j in range(0, self.cols):
                     self.values[i][j] += n.values[i][j]
-            # print("add result: ", self.values)
         else:
             for i in range(0, self.rows):
                 for j in range(0, self.cols):
                     self.values[i][j] += n
+
 
     @staticmethod
     def subtract(m1, m2):
@@ -60,6 +63,7 @@ class Matrix:
                     result.values[i][j] = m1.values[i][j] - m2.values[i][j]
             return result
 
+
     @staticmethod
     def multiply(m1, m2):
         if m1.cols != m2.rows:
@@ -70,12 +74,6 @@ class Matrix:
             )
         elif m1.cols == m2.rows:
             result = Matrix(m1.rows, m2.cols)
-            # print("mul m1 rows: ", m1.rows)
-            # print("mul m1 cols: ", m1.cols)
-            # print("mul m1 vals: ", m1.values)
-            # print("mul m2 rows: ", m2.rows)
-            # print("mul m2 cols: ", m2.cols)
-            # print("mul m2 vals: ", m2.values)
 
             for i in range(0, result.rows):
                 for j in range(0, result.cols):
@@ -83,8 +81,9 @@ class Matrix:
                     for k in range(0, m1.cols):
                         sum += m1.values[i][k] * m2.values[k][j]
                     result.values[i][j] = sum
-            #print("mul result: ", result.values, "\n")
+
             return result
+
 
     @staticmethod
     def elemulti(m1, m2):
@@ -102,10 +101,12 @@ class Matrix:
                     result.values[i][j] = m1.values[i][j] * m2.values[i][j]
             return result
 
+
     def scale(self, n):
         for i in range(0, self.rows):
             for j in range(0, self.cols):
                 self.values[i][j] *= n
+
 
     def transpose(self):
         result = Matrix(self.cols, self.rows)
@@ -113,6 +114,7 @@ class Matrix:
             for j in range(0, self.cols):
                 result.values[j][i] = self.values[i][j]
         return result
+
 
     @staticmethod
     def statranse(m):
@@ -127,12 +129,14 @@ class Matrix:
             result = Matrix(m.cols, m.rows)
 
             for i in range(0, m.rows):
-                # for j in range(0, m.cols):
                 result.values[i][0] = m[i]
+
             return result
+
 
     def map(self, m, func, *args):
         func(m, *args)
+
 
     @staticmethod
     def stamap(m, func):
