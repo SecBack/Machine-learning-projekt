@@ -1,8 +1,12 @@
 import sys
 import csv
 import random
+# import numpy as np
+# import MySQLdb
 from Matrix import Matrix
+# from NeuralNetwork import NeuralNetwork
 from NeuralNetwork import NeuralNetwork
+# from numba import vectorize
 
 inputNodes = 784
 outputNodes = 10
@@ -66,3 +70,4 @@ for i in range(len(conArr)):
         print("feedforward: ", ffOutput.values)
 
     nn.backprop(nn, tarArrArr[i], ffOutput)
+
